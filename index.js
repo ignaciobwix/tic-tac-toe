@@ -1,3 +1,4 @@
+//
 (function () {
   const state = {
     operationId: 0,
@@ -12,56 +13,44 @@
   };
 
   const getWinner = (token) => {
-    const { row0, row1, row2 } = state;
+    const { buttonsMap } = state;
 
     const hasSameToken = (button) => button.textContent === token;
-    const getRowButtons = (row) => Array.from(row.children);
-    const rowItems2Boolean = (row) => getRowButtons(row).every(hasSameToken);
 
-    const rows = [row0, row1, row2];
+    const buttonsByColumn = {};
+    const buttonsByRow = {};
+    const topLeftDiagonalButtons = [];
+    const topRightDiagonalButtons = [];
 
-    const rowHavingSameToken = rows
-      .map(rowItems2Boolean)
-      .some((value) => value);
+    for (const entry of buttonsMap.entries()) {
+      const [[rowNumber, , colNumber], button] = entry;
+      const colButtons = buttonsByColumn[colNumber] || [];
+      colButtons.push(button);
+      buttonsByColumn[colNumber] = colButtons;
 
-    // todo: redo this
-    const columnWihsameToken = Object.values(
-      Object.entries(state.buttonsByCoordinates).reduce(
-        (acc, [coordinate, button]) => {
-          const columnValue = coordinate.split("-")[0];
-          const columnItems = acc[`column${columnValue}`];
-          columnItems.push(button);
-          acc[`column${columnValue}`] = columnItems;
-          return acc;
-        },
-        {
-          column0: [],
-          column1: [],
-          column2: [],
-        }
-      )
-    )
-      .map((col) => col.every(hasSameToken))
-      .some((value) => value);
+      const rowButtons = buttonsByRow[rowNumber] || [];
+      rowButtons.push(button);
+      buttonsByRow[rowNumber] = rowButtons;
 
-    const topLeftDiagonalWithSameToken =
-      rows
-        .map((row) => getRowButtons(row))
-        .filter((button, i) => button[i].textContent === token).length === 3;
+      if (rowNumber === colNumber) {
+        topLeftDiagonalButtons.push(button);
+      }
 
-    const topRightDiagonalWithSameToken =
-      rows
-        .map((row) => getRowButtons(row))
-        .toReversed()
-        .filter((button, i) => button[i].textContent === token).length === 3;
+      if (Number(rowNumber) + Number(colNumber)) {
+        topRightDiagonalButtons.push(button);
+      }
+    }
 
-    if (
-      rowHavingSameToken ||
-      columnWihsameToken ||
-      topLeftDiagonalWithSameToken ||
-      topRightDiagonalWithSameToken
-    ) {
-      alert(`The winner is ${token}`);
+    const x =
+      topLeftDiagonalButtons.every(hasSameToken) ||
+      topRightDiagonalButtons.every(hasSameToken);
+
+    const a =
+      Object.values(buttonsByColumn).find((v) => v.every(hasSameToken)) ||
+      Object.values(buttonsByRow).find((v) => v.every(hasSameToken));
+
+    if (x || a) {
+      alert(token);
     }
   };
 
@@ -74,6 +63,23 @@
   }
 
   const getNewGameMatrix = () => new Array(3).fill(new Array(3).fill(" "));
+
+  const foo = () => {
+    const m = new Map();
+    getNewGameMatrix().forEach((row, i) => {
+      const rowContainer = document.querySelector(`#row-${i}`);
+
+      row.forEach((col, j) => {
+        const btn = document.createElement("button");
+        btn.addEventListener("click", handleCellClick);
+        m.set(`${i}-${j}`, btn);
+
+        rowContainer.appendChild(btn);
+      });
+    });
+
+    state.buttonsMap = m;
+  };
 
   const createButtonsFrom = (newGameMatrix) => {
     const buttons = [];
@@ -94,5 +100,40 @@
     return buttons;
   };
 
-  createButtonsFrom(getNewGameMatrix());
+  // createButtonsFrom(getNewGameMatrix());
+  foo();
 })();
+// const rowHavingSameToken = rows
+//   .map(rowItems2Boolean)
+//   .some((value) => value);
+
+// // todo: redo this
+// const columnWihsameToken = Object.values(
+//   Object.entries(state.buttonsByCoordinates).reduce(
+//     (acc, [coordinate, button]) => {
+//       const columnValue = coordinate.split("-")[0];
+//       const columnItems = acc[`column${columnValue}`];
+//       columnItems.push(button);
+//       acc[`column${columnValue}`] = columnItems;
+//       return acc;
+//     },
+//     {
+//       column0: [],
+//       column1: [],
+//       column2: [],
+//     }
+//   )
+// )
+//   .map((col) => col.every(hasSameToken))
+//   .some((value) => value);
+
+// const topLeftDiagonalWithSameToken =
+//   rows
+//     .map((row) => getRowButtons(row))
+//     .filter((button, i) => button[i].textContent === token).length === 3;
+
+// const topRightDiagonalWithSameToken =
+//   rows
+//     .map((row) => getRowButtons(row))
+//     .toReversed()
+//     .filter((button, i) => button[i].textContent === token).length === 3;
