@@ -1,0 +1,15 @@
+#rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+}
+
+button {
+  width: 10vw;
+  height: 10vh;
+  background: none;
+  border: 1px solid black;
+}
